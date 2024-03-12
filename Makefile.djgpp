@@ -1,0 +1,30 @@
+ARCH        =
+CFLAGS = \
+-std=gnu++11 -nostdlib -m32 -ffreestanding \
+-O2 -Wall -Wextra -fno-exceptions -DNDEBUG $(ARCH)
+
+LFLAGS = \
+-s -lm -no-pie
+
+CC      = i586-pc-msdosdjgpp-gcc
+CXX     = i586-pc-msdosdjgpp-g++
+LINK    = i586-pc-msdosdjgpp-g++
+EXE2COFF = ~/djgpp/i586-pc-msdosdjgpp/bin/exe2coff
+INTERM  = interm
+TARGET  = gustest.exe
+OBJS   := $(shell ls *.cpp | sed 's/.cpp/.djgpp.o/g' | tr '\n' ' ')
+
+.PHONY: all clean
+
+all: $(TARGET)
+
+clean:
+	rm -f *.o $(TARGET) $(INTERM).exe $(INTERM)
+
+%.djgpp.o: %.cpp *.h
+	$(CXX) -c $(CFLAGS) -o $@ $<
+
+$(TARGET): $(OBJS)
+	$(LINK) -o $(INTERM).exe $(OBJS)  $(LFLAGS)
+	$(EXE2COFF) $(INTERM).exe
+	cat CWSDSTUB.EXE $(INTERM) > $(TARGET)
